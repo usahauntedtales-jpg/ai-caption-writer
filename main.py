@@ -4,6 +4,9 @@ from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
+# --- TERI API KEY ---
+GEMINI_KEY = "AIzaSyBvkE49kLx0pURGIaMX0HvIbQL5kMkGlWM"
+
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -40,16 +43,25 @@ def home():
     results, error = None, None
     if request.method == "POST":
         topic = request.form.get("topic", "")
+        # Pure REST API call - Sabse stable tarika
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
+        headers = {'Content-Type': 'application/json'}
+        payload = {
+            "contents": [{
+                "parts": [{"text": f"Write 3 short viral Instagram captions for: {topic}. Add emojis."}]
+            }]
+        }
+        
         try:
-            # Ye API bina kisi key ke chalti hai bhai
-            url = f"https://text.pollinations.ai/Write%203%20short%20viral%20Instagram%20captions%20for%20{topic}"
-            response = requests.get(url)
-            results = response.text
+            response = requests.post(url, headers=headers, json=payload)
+            response_json = response.json()
+            # Extracting text from Gemini response
+            results = response_json['candidates']['content']['parts']['text']
         except Exception as e:
-            error = "Bhai server thoda busy hai, dobara try karo."
+            error = "Bhai, API thoda busy hai. Ek baar refresh karke try karo."
             
     return render_template_string(HTML_TEMPLATE, results=results, error=error)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
-        
+    
