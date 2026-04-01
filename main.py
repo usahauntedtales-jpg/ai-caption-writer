@@ -7,12 +7,8 @@ app = Flask(__name__)
 # --- TERI API KEY ---
 GEMINI_KEY = "AIzaSyBvkE49kLx0pURGIaMX0HvIbQL5kMkGlWM"
 
-try:
-    genai.configure(api_key=GEMINI_KEY)
-    # Model name with full path - Isse 404 error nahi aayega
-    model = genai.GenerativeModel('models/gemini-pro')
-except Exception as e:
-    print(f"Setup Error: {e}")
+# Engine setup
+genai.configure(api_key=GEMINI_KEY)
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -51,11 +47,18 @@ def home():
     if request.method == "POST":
         topic = request.form.get("topic", "")
         try:
-            # Response generation
+            # Sabse safe tarika generation ka
+            model = genai.GenerativeModel('gemini-pro')
             response = model.generate_content(f"Write 3 viral Instagram captions for: {topic}")
             results = response.text
         except Exception as e:
-            error = f"Bhai, thoda error hai: {str(e)}"
+            # Agar gemini-pro na chale toh flash try karega automatically
+            try:
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                response = model.generate_content(f"Write 3 viral Instagram captions for: {topic}")
+                results = response.text
+            except Exception as e2:
+                error = f"Bhai, thoda error hai: {str(e2)}"
     return render_template_string(HTML_TEMPLATE, results=results, error=error)
 
 if __name__ == "__main__":
