@@ -5,7 +5,7 @@ from flask import Flask, render_template_string, request
 app = Flask(__name__)
 
 # --- TERI GEMINI API KEY ---
-GEMINI_KEY = "AIzaSyCohNDZnm_ys8ksoMIA_zlw0b68XwbFHC8"
+GEMINI_KEY = "AIzaSyBvkE49kLx0pURGIaMX0HvIbQL5kMkGlWM"
 genai.configure(api_key=GEMINI_KEY)
 model = genai.GenerativeModel('gemini-pro')
 
