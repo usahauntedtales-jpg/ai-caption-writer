@@ -20,7 +20,8 @@ HTML_TEMPLATE = """
         .card { background: white; padding: 30px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); width: 100%; max-width: 500px; text-align: center; }
         .logo { font-size: 1.8em; font-weight: bold; background: -webkit-linear-gradient(#f09433, #bc1888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; display: inline-block; }
         textarea { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; font-size: 1em; height: 100px; outline: none; margin-bottom: 15px; resize: none; }
-        .gen-btn { width: 100%; background: #bc1888; color: white; border: none; padding: 15px; border-radius: 12px; font-size: 1.1em; font-weight: bold; cursor: pointer; }
+        .gen-btn { width: 100%; background: #bc1888; color: white; border: none; padding: 15px; border-radius: 12px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .gen-btn:active { transform: scale(0.95); }
         .result-area { margin-top: 25px; text-align: left; background: #fafafa; padding: 15px; border-radius: 12px; border: 1px solid #eee; white-space: pre-wrap; color: #333; line-height: 1.6; }
     </style>
 </head>
@@ -43,22 +44,25 @@ def home():
     results, error = None, None
     if request.method == "POST":
         topic = request.form.get("topic", "")
-        # Pure REST API call - Sabse stable tarika
-        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
+        # Maine model ka naam change karke 'gemini-1.5-flash' kar diya hai jo turant chalta hai
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
         headers = {'Content-Type': 'application/json'}
         payload = {
             "contents": [{
-                "parts": [{"text": f"Write 3 short viral Instagram captions for: {topic}. Add emojis."}]
+                "parts": [{"text": f"Write 3 short viral Instagram captions for: {topic}. Use emojis and hashtags."}]
             }]
         }
         
         try:
             response = requests.post(url, headers=headers, json=payload)
             response_json = response.json()
-            # Extracting text from Gemini response
-            results = response_json['candidates']['content']['parts']['text']
+            # Isme hum check kar rahe hain ki response aaya ya nahi
+            if 'candidates' in response_json:
+                results = response_json['candidates']['content']['parts']['text']
+            else:
+                error = f"API Message: {response_json.get('error', {}).get('message', 'Key activation pending')}"
         except Exception as e:
-            error = "Bhai, API thoda busy hai. Ek baar refresh karke try karo."
+            error = "Bhai, API thoda thak gaya hai. 2 minute baad try karo."
             
     return render_template_string(HTML_TEMPLATE, results=results, error=error)
 
