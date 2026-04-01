@@ -4,9 +4,6 @@ from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-# --- TERI API KEY ---
-GEMINI_KEY = "AIzaSyBvkE49kLx0pURGIaMX0HvIbQL5kMkGlWM"
-
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -43,19 +40,16 @@ def home():
     results, error = None, None
     if request.method == "POST":
         topic = request.form.get("topic", "")
-        # Seedha API se baat (No library needed)
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
-        payload = {"contents": [{"parts": [{"text": f"Write 3 viral Instagram captions for: {topic}"}]}]}
-        
+        # Bhai yahan humne ek alternative free AI api use ki hai
         try:
-            response = requests.post(url, json=payload)
-            data = response.json()
-            results = data['candidates']['content']['parts']['text']
+            url = f"https://text.pollinations.ai/{topic}%20instagram%20caption"
+            response = requests.get(url)
+            results = response.text
         except Exception as e:
-            error = "Bhai, API ne jawab nahi diya. Key check kar lo."
+            error = "Server thoda busy hai, 1 minute baad try karein."
             
     return render_template_string(HTML_TEMPLATE, results=results, error=error)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
-        
+            
