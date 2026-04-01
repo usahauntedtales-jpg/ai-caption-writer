@@ -1,14 +1,11 @@
 import os
-import google.generativeai as genai
+import requests
 from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
 # --- TERI API KEY ---
 GEMINI_KEY = "AIzaSyBvkE49kLx0pURGIaMX0HvIbQL5kMkGlWM"
-
-# Engine setup
-genai.configure(api_key=GEMINI_KEY)
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -46,21 +43,19 @@ def home():
     results, error = None, None
     if request.method == "POST":
         topic = request.form.get("topic", "")
+        # Seedha API se baat (No library needed)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
+        payload = {"contents": [{"parts": [{"text": f"Write 3 viral Instagram captions for: {topic}"}]}]}
+        
         try:
-            # Sabse safe tarika generation ka
-            model = genai.GenerativeModel('gemini-pro')
-            response = model.generate_content(f"Write 3 viral Instagram captions for: {topic}")
-            results = response.text
+            response = requests.post(url, json=payload)
+            data = response.json()
+            results = data['candidates']['content']['parts']['text']
         except Exception as e:
-            # Agar gemini-pro na chale toh flash try karega automatically
-            try:
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content(f"Write 3 viral Instagram captions for: {topic}")
-                results = response.text
-            except Exception as e2:
-                error = f"Bhai, thoda error hai: {str(e2)}"
+            error = "Bhai, API ne jawab nahi diya. Key check kar lo."
+            
     return render_template_string(HTML_TEMPLATE, results=results, error=error)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
-    
+        
