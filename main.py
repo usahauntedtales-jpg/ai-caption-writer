@@ -28,7 +28,7 @@ HTML_TEMPLATE = """
             <textarea name="topic" placeholder="Example: Jaipur trip with family..." required></textarea>
             <button type="submit" class="gen-btn">Generate Magic ✨</button>
         </form>
-        {% if results %}<div class="result-area"><strong>🚀 Captions:</strong><br><br>{{ results }}</div>{% endif %}
+        {% if results %}<div class="result-area"><strong>🚀 Your AI Captions:</strong><br><br>{{ results }}</div>{% endif %}
         {% if error %}<p style="color: red; margin-top: 15px;">{{ error }}</p>{% endif %}
     </div>
 </body>
@@ -40,16 +40,16 @@ def home():
     results, error = None, None
     if request.method == "POST":
         topic = request.form.get("topic", "")
-        # Bhai yahan humne ek alternative free AI api use ki hai
         try:
-            url = f"https://text.pollinations.ai/{topic}%20instagram%20caption"
+            # Ye API bina kisi key ke chalti hai bhai
+            url = f"https://text.pollinations.ai/Write%203%20short%20viral%20Instagram%20captions%20for%20{topic}"
             response = requests.get(url)
             results = response.text
         except Exception as e:
-            error = "Server thoda busy hai, 1 minute baad try karein."
+            error = "Bhai server thoda busy hai, dobara try karo."
             
     return render_template_string(HTML_TEMPLATE, results=results, error=error)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
-            
+        
